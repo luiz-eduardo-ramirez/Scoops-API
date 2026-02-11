@@ -1,0 +1,6 @@
+@Scoops.Management.API_HostAddress = http://localhost:5237
+
+GET {{Scoops.Management.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
