@@ -15,24 +15,23 @@ namespace Scoops.Auth.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // 1. CADASTRAR (POST /api/auth/register)
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
-            // Valida se já existe
             if (await _context.Users.AnyAsync(u => u.Login == user.Login))
                 return BadRequest("Usuário já existe!");
 
-            // Criptografa a senha (BCrypt)
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            // Define padrão
             if (string.IsNullOrEmpty(user.Role)) user.Role = "USER";
             user.Enabled = true;
 
@@ -46,37 +45,59 @@ namespace Scoops.Auth.API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
-            // Busca usuário
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == request.Login);
+            var loginInput = request.Login.Trim().ToLower();
+            Console.WriteLine($"--> Tentativa de login: [{loginInput}]");
 
-            // Valida senha criptografada
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == loginInput);
+
+            if (user == null)
+            {
                 return Unauthorized("Login ou senha inválidos.");
+            }
 
-            // Gera Token
-            var token = GenerateJwtToken(user);
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            {
+                Console.WriteLine("--> Erro: Senha não confere.");
+                return Unauthorized("Login ou senha inválidos.");
+            }
 
-            return new AuthResponse(token, user.Name ?? user.Login, user.Role);
+            // 1. Gera apenas a STRING do token
+            var tokenString = GenerateJwtToken(user);
+
+            // 2. Monta a resposta aqui no Controller
+            // O construtor do AuthResponse vai converter a Role para lista automaticamente
+            return Ok(new AuthResponse(
+                user.Id,                    // ID (Muito importante pro React)
+                tokenString,                // Token
+                user.Name ?? user.Login,    // Username (Nome de exibição)
+                user.Login,                 // Email
+                user.Role
+            ));
         }
 
-        // Método auxiliar para gerar o JWT
+        // Método auxiliar: A responsabilidade dele é APENAS devolver a string do token
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            // A mesma chave que configuramos no Program.cs
-            var key = Encoding.ASCII.GetBytes("UmaChaveSuperSecretaEComPeloMenos32Caracteres!");
+
+            var jwtKey = _configuration["JWT_SECRET"] ?? "Chave_Secreta_Padrao_Local_Apenas_Para_Dev_123";
+            var key = Encoding.ASCII.GetBytes(jwtKey);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] {
-                    new Claim(ClaimTypes.Name, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Login),
                     new Claim(ClaimTypes.Role, user.Role)
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
+            // Cria o objeto do token
             var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            // CONVERTE O OBJETO PARA STRING (Isso resolve o erro CS1503)
             return tokenHandler.WriteToken(token);
         }
     }

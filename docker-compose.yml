@@ -1,0 +1,70 @@
+services:
+  # 1. Banco de Dados SQL Server
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: scoops-sql-server
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SuaSenhaForte@123
+    ports:
+      - "1433:1433"
+    networks:
+      - scoops-network
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  # 2. Microsserviço de Autenticação
+  auth-api:
+    build:
+      context: ./Scoops.Auth.API
+      dockerfile: Dockerfile
+    container_name: scoops-auth-api
+    ports:
+      - "5001:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsAuthDB;User Id=sa;Password=SuaSenhaForte@123;TrustServerCertificate=True;
+      - ASPNETCORE_ENVIRONMENT=Development
+      # --- NOVAS VARIÁVEIS DE AMBIENTE ---
+      - ADMIN_EMAIL=admin@scoopsamanda.com
+      - ADMIN_PASSWORD=password
+    depends_on:
+      - sqlserver
+    networks:
+      - scoops-network
+
+  # 3. Microsserviço de Gestão
+  management-api:
+    build:
+      context: ./Scoops.Management.API
+      dockerfile: Dockerfile
+    container_name: scoops-management-api
+    ports:
+      - "5000:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsManagementDB;User Id=sa;Password=SuaSenhaForte@123;TrustServerCertificate=True;
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - sqlserver
+    networks:
+      - scoops-network
+
+  # 4. Frontend React (NOVO) ⚛️
+  frontend:
+    build:
+      context: ./scoops-web
+      dockerfile: Dockerfile
+    container_name: scoops-frontend
+    ports:
+      - "3000:80" # Acessar em http://localhost:3000
+    depends_on:
+      - auth-api
+      - management-api
+    networks:
+      - scoops-network
+
+networks:
+  scoops-network:
+    driver: bridge
+
+volumes:
+  sql_data:
