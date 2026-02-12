@@ -15,6 +15,8 @@ import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import AdminProducts from "./pages/AdminProducts";
 import ProductDetails from "./pages/ProductDetails";
+import AdminSuppliers from "./pages/AdminSuppliers";
+import AdminDeliveries from "./pages/AdminDeliveries";
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin-suppliers" element={<AdminSuppliers />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/payment/:id" element={<Payment />} />
           <Route path="/orders" element={<Orders />} />
@@ -34,6 +37,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/products/:id" element={<ProductDetails />} />
+          <Route path="/admin-deliveries" element={<AdminDeliveries />} />
         </Routes>
 
 

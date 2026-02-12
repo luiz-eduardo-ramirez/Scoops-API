@@ -1,8 +1,9 @@
-import { ShoppingCart, LogOut, ShoppingBag, ClipboardList, Package, Settings, Plus } from "lucide-react"; 
+import { ShoppingCart, LogOut, ShoppingBag, ClipboardList, Package, Settings, Plus, Truck  } from "lucide-react"; 
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { useCart } from "../context/CartContext";
 import CartSidebar from "./CartSidebar";
+
 
 export default function Navbar() {
   const { cart, isCartOpen, setIsCartOpen } = useCart();
@@ -59,6 +60,16 @@ export default function Navbar() {
                     <Link to="/admin" className={btnStyle} title="Cadastrar Novo">
                       <Plus size={18} />
                       <span className="hidden lg:inline">Novo</span>
+                    </Link>
+
+                    <Link to="/admin-suppliers" className={btnStyle} title="Gerenciar Fornecedores">
+                      <Truck size={18} />
+                      <span className="hidden lg:inline">Fornecedores</span>
+                    </Link>
+
+                    <Link to="/admin-deliveries" className={btnStyle} title="Registro de Entregas">
+                      <ClipboardList size={18} />
+                      <span className="hidden lg:inline">Entregas</span>
                     </Link>
 
                     {/* Botão Gestão (NOVO) */}
