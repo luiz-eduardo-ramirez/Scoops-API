@@ -53,75 +53,64 @@ export default function ProductCard({ id, name, price, image1, image2, image3, d
       initial="hidden"
       whileInView="visible" 
       viewport={{ once: true, margin: "-50px" }} 
-      className="bg-white rounded-3xl shadow-lg overflow-hidden border-2 border-transparent hover:border-scoop-blue transition-all duration-300 hover:-translate-y-2 group flex flex-col h-full relative"
+      /* Ajuste: h-full para alinhar os botões no final e shadow mais suave */
+      className="bg-white rounded-[2.5rem] shadow-xl shadow-pink-100/50 overflow-hidden border-2 border-transparent hover:border-scoop-pink/30 transition-all duration-500 hover:-translate-y-3 group flex flex-col h-full relative"
     >
       
-      {/* Área da Imagem */}
-      <div className="h-64 bg-scoop-bg relative flex items-center justify-center overflow-hidden">
+      {/* Área da Imagem: Aumentada de h-64 para h-80 */}
+      <div className="h-80 bg-scoop-bg relative flex items-center justify-center overflow-hidden">
           
           <Link 
             to={`/product/${id}`} 
-            target="_blank" 
-            rel="noopener noreferrer" 
             className="w-full h-full flex items-center justify-center"
           >
             <Motion.img 
-                key={currentImage} // A chave muda, forçando a re-renderização da animação da imagem
+                key={currentImage}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
                 src={currentImage || image1} 
                 alt={name} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 cursor-pointer" 
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
             />
           </Link>
 
-        {/* Badges / Etiquetas */}
-        <div className="absolute top-3 left-3 flex gap-2 pointer-events-none z-10">
+        {/* Badges: Mais destacados e com blur */}
+        <div className="absolute top-4 left-4 flex gap-2 z-10">
             {category === "Scoops" ? (
-                <div className="bg-white/90 text-scoop-purple text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1 backdrop-blur-sm">
-                    <Sparkles size={12} /> {scoopsInBundle}x
+                <div className="bg-white/80 backdrop-blur-md text-scoop-purple text-sm font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 border border-white/50">
+                    <Sparkles size={14} /> {scoopsInBundle}x
                 </div>
             ) : (
-                <div className="bg-white/90 p-1 rounded-full shadow-sm backdrop-blur-sm">
-                    <span className="text-xl">🎁</span>
+                <div className="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg border border-white/50">
+                    <span className="text-2xl">🎁</span>
                 </div>
             )}
         </div>
         
-        <div className="absolute top-3 right-3 bg-white/90 text-scoop-purple text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1 backdrop-blur-sm pointer-events-none z-10">
-          <Sparkles size={12} /> {category || "Geral"}
+        <div className="absolute top-4 right-4 bg-scoop-pink/90 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-lg backdrop-blur-sm uppercase tracking-widest">
+           {category || "Geral"}
         </div>
       </div>
 
       {/* Conteúdo do Card */}
-      <div className="p-5 flex flex-col flex-1">
+      <div className="p-7 flex flex-col flex-1">
         
-        <Link 
-            to={`/product/${id}`} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="block hover:text-scoop-pink transition-colors duration-300"
-        >
-            <h3 className="font-bubble text-2xl text-gray-700 mb-1 leading-tight">{name}</h3>
+        <Link to={`/product/${id}`} className="block group-hover:text-scoop-pink transition-colors">
+            <h3 className="font-bubble text-3xl text-gray-800 mb-2 leading-tight">{name}</h3>
         </Link>
         
-        <p className="font-hand text-gray-500 text-lg leading-tight mb-4 line-clamp-3">
+        <p className="font-hand text-gray-500 text-xl leading-relaxed mb-6 line-clamp-2">
           {description}
         </p>
 
+        {/* Combo de Scoops mais robusto */}
         {category === "Scoops" && (
-            <div className="mb-4 bg-scoop-bg p-3 rounded-xl border border-blue-100">
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs text-gray-500 font-bold uppercase">Escolha o combo:</span>
-                    {scoopsInBundle === 3 && (
-                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold animate-pulse">
-                            Melhor Oferta! ✨
-                        </span>
-                    )}
+            <div className="mb-6 bg-scoop-pink/5 p-4 rounded-2xl border border-scoop-pink/10">
+                <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs text-scoop-purple/60 font-black uppercase tracking-tighter">Escolha o seu combo:</span>
                 </div>
                 
-                <div className="flex justify-between gap-2">
+                <div className="flex justify-between gap-3">
                     {[1, 2, 3].map((qtd) => (
                         <button
                             key={qtd}
@@ -131,10 +120,10 @@ export default function ProductCard({ id, name, price, image1, image2, image3, d
                                 if(qtd === 2) setCurrentImage(image2 || image1);
                                 if(qtd === 3) setCurrentImage(image3 || image1);
                             }}
-                            className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all ${
+                            className={`flex-1 py-3 rounded-xl font-black text-base transition-all duration-300 ${
                                 scoopsInBundle === qtd 
-                                ? "bg-scoop-pink text-white shadow-md scale-105" 
-                                : "bg-white text-gray-400 border border-gray-200 hover:bg-gray-50"
+                                ? "bg-scoop-pink text-white shadow-xl shadow-pink-200 scale-105" 
+                                : "bg-white text-gray-400 border border-gray-100 hover:border-scoop-pink/30 hover:text-scoop-pink"
                             }`}
                         >
                             {qtd}x
@@ -144,20 +133,21 @@ export default function ProductCard({ id, name, price, image1, image2, image3, d
             </div>
         )}
 
-        <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-100">
+        {/* Footer com Preço e Botão */}
+        <div className="mt-auto pt-6 flex items-center justify-between border-t border-gray-50">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-400 font-bold uppercase">Total</span>
-            <span className="text-2xl font-bold text-scoop-pink">
+            <span className="text-xs text-gray-400 font-black uppercase">Investimento</span>
+            <span className="text-3xl font-black text-scoop-pink tracking-tighter">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getBundlePrice())}
             </span>
           </div>
 
           <button 
             onClick={handleBuy} 
-            className="bg-scoop-blue text-white font-bold py-2 px-4 rounded-xl hover:bg-cyan-500 transition-all shadow-md active:scale-90 flex items-center gap-2"
+            className="bg-scoop-blue text-white font-black py-3 px-6 rounded-2xl hover:bg-scoop-pink transition-all duration-300 shadow-xl shadow-blue-100 hover:shadow-pink-100 active:scale-95 flex items-center gap-2 uppercase text-sm tracking-widest"
           >
-            <ShoppingBag size={18} />
-            ADICIONAR
+            <ShoppingBag size={20} />
+            Pegar!
           </button>
         </div>
       </div>

@@ -16,28 +16,22 @@ const headerVariants = {
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // --- Estados de Paginação e Filtro ---
   const [page, setPage] = useState(0);
-  const [size] = useState(6); // 6 produtos por página fica ótimo no grid
+  const [size] = useState(8); // Aumentamos para 8 para preencher melhor o grid de 4 colunas
   const [category, setCategory] = useState("Todas");
 
-  // Lista de categorias (Pode vir de uma API no futuro)
   const categories = ["Todas", "Scoops", "Beleza", "Acessórios", "Papelaria"];
 
   useEffect(() => {
     fetchProducts();
-  }, [page, category]); // Recarrega sempre que mudar a página ou a categoria
+  }, [page, category]);
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // Usamos o endpoint paged que configuramos no Backend
       const response = await api.get(`/products/paged?page=${page}&size=${size}`);
-      
       let data = response.data;
 
-      // Filtro no Frontend (para simplicidade, ou você pode passar a categoria via query se o backend suportar)
       if (category !== "Todas") {
         data = data.filter(p => p.category === category);
       }
@@ -54,32 +48,34 @@ export default function Home() {
     <div className="min-h-screen pb-10 bg-scoop-bg">
       <Navbar />
 
-      <main className="max-w-6xl mx-auto p-4">
-        {/* Animação do Cabeçalho */}
+      {/* AJUSTE: max-w-[95%] para espalhar o conteúdo pelas laterais */}
+      <main className="max-w-[95%] mx-auto p-4">
+        
+        {/* Animação do Cabeçalho - Título Aumentado */}
         <Motion.div 
           variants={headerVariants}
           initial="hidden"
           animate="visible"
-          className="text-center my-8"
+          className="text-center my-12"
         >
-          <h1 className="text-4xl font-bubble text-scoop-pink drop-shadow-md">
+          <h1 className="text-5xl md:text-6xl font-bubble text-scoop-pink drop-shadow-lg mb-4">
             Escolha seu Destino ✨
           </h1>
-          <p className="text-scoop-purple font-hand text-xl mt-2">
+          <p className="text-scoop-purple font-hand text-2xl mt-2 italic">
             Deixe o universo escolher os melhores itens para você!
           </p>
         </Motion.div>
 
         {/* --- FILTROS DE CATEGORIA --- */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => { setCategory(cat); setPage(0); }}
-              className={`px-6 py-2 rounded-full font-bold transition-all shadow-sm ${
+              className={`px-8 py-3 rounded-full font-black transition-all duration-300 shadow-md ${
                 category === cat 
-                ? "bg-scoop-pink text-white scale-105 shadow-pink-200" 
-                : "bg-white text-scoop-purple hover:bg-scoop-blue/10"
+                ? "bg-scoop-pink text-white scale-110 shadow-pink-200" 
+                : "bg-white text-scoop-purple hover:bg-scoop-blue/10 border border-gray-100"
               }`}
             >
               {cat}
@@ -89,7 +85,7 @@ export default function Home() {
 
         {loading ? (
             <div className="flex justify-center mt-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-scoop-pink"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-scoop-pink"></div>
             </div>
         ) : products.length === 0 ? (
           <Motion.div 
@@ -97,11 +93,12 @@ export default function Home() {
             animate={{ opacity: 1 }} 
             className="text-center text-gray-400 mt-10"
           >
-            <p className="text-xl font-hand">Nenhum scoop disponível nesta categoria... 😢</p>
+            <p className="text-2xl font-hand">Nenhum scoop disponível nesta categoria... 😢</p>
           </Motion.div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* GRID: 4 colunas em telas grandes (xl) e gap maior para respiro */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
               <AnimatePresence mode="wait">
                   {products.map(product => (
                     <Motion.div
@@ -125,23 +122,25 @@ export default function Home() {
             </div>
 
             {/* --- CONTROLES DE PAGINAÇÃO --- */}
-            <div className="flex justify-center items-center gap-4 mt-12">
+            <div className="flex justify-center items-center gap-6 mt-16">
               <button
                 disabled={page === 0}
                 onClick={() => setPage(p => p - 1)}
-                className="px-4 py-2 bg-white rounded-xl shadow-sm disabled:opacity-30 hover:bg-gray-50 transition font-bold text-scoop-purple"
+                className="px-6 py-3 bg-white rounded-2xl shadow-lg disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-scoop-purple hover:-translate-x-1"
               >
                 Anterior
               </button>
               
-              <span className="font-bubble text-scoop-pink text-xl">
-                {page + 1}
-              </span>
+              <div className="bg-white px-6 py-3 rounded-2xl shadow-inner border border-gray-50">
+                <span className="font-bubble text-scoop-pink text-2xl">
+                    {page + 1}
+                </span>
+              </div>
 
               <button
-                disabled={products.length < size} // Se veio menos que o 'size', é a última página
+                disabled={products.length < size}
                 onClick={() => setPage(p => p + 1)}
-                className="px-4 py-2 bg-white rounded-xl shadow-sm disabled:opacity-30 hover:bg-gray-50 transition font-bold text-scoop-purple"
+                className="px-6 py-3 bg-white rounded-2xl shadow-lg disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-scoop-purple hover:translate-x-1"
               >
                 Próxima
               </button>
