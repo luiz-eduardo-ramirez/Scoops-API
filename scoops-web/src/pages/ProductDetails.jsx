@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // Para pegar o ID da URL
-import { ShoppingBag, Star, ArrowLeft, Loader2 } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { ShoppingBag, Star, Loader2 } from "lucide-react";
 import { motion as Motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import { useCart } from "../context/CartContext";
@@ -13,23 +13,27 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
-  const [scoops, setScoops] = useState(1); // Quantidade selecionada
+  const [scoops, setScoops] = useState(1);
 
   useEffect(() => {
     api.get(`/products/${id}`)
        .then(res => {
          setProduct(res.data);
-         setSelectedImage(res.data.imageUrl); // Define a primeira foto como padrão
+         // Aplicamos o encodeURI na imagem inicial
+         setSelectedImage(res.data.imageUrl ? encodeURI(res.data.imageUrl) : "");
        })
        .catch(err => console.error("Erro ao carregar produto", err))
        .finally(() => setLoading(false));
   }, [id]);
 
-  // Lista de imagens disponíveis (filtra as que não existem)
-  const images = product ? [product.imageUrl, product.imageUrl2, product.imageUrl3].filter(Boolean) : [];
+  // Lista de imagens com encodeURI aplicado em todas
+  const images = product ? [
+    product.imageUrl ? encodeURI(product.imageUrl) : null,
+    product.imageUrl2 ? encodeURI(product.imageUrl2) : null,
+    product.imageUrl3 ? encodeURI(product.imageUrl3) : null
+  ].filter(Boolean) : [];
 
   const handleBuy = () => {
-    // Lógica de preço dinâmico se for Scoop
     let finalPrice = product.price;
     if (product.category === "Scoops") {
         if(scoops === 1) finalPrice = 60.00;
@@ -47,74 +51,84 @@ export default function ProductDetails() {
     setIsCartOpen(true);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-scoop-bg"><Loader2 className="animate-spin text-scoop-pink" size={48}/></div>;
-  if (!product) return <div className="min-h-screen flex items-center justify-center">Produto não encontrado 😢</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-scoop-bg">
+      <Loader2 className="animate-spin text-scoop-pink" size={48}/>
+    </div>
+  );
+
+  if (!product) return (
+    <div className="min-h-screen flex items-center justify-center font-hand text-2xl">
+      Produto não encontrado 😢
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-scoop-bg pb-10">
       <Navbar />
-
-      <main className="max-w-6xl mx-auto p-4 mt-8">
+      <main className="max-w-[95%] mx-auto p-4 mt-8"> {/* Ajustado para nova margem do site */}
         <Motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-white p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-10"
+            className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border-2 border-white p-6 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-12"
         >
-            {/* 📸 COLUNA DA ESQUERDA: GALERIA */}
-            <div className="flex flex-col gap-4">
+            {/* GALERIA */}
+            <div className="flex flex-col gap-6">
                 <Motion.div 
                     key={selectedImage}
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="aspect-square rounded-2xl overflow-hidden bg-gray-50 border-2 border-gray-100"
+                    className="aspect-square rounded-[2rem] overflow-hidden bg-scoop-bg border-2 border-gray-50 shadow-inner"
                 >
-                    <img src={selectedImage} alt={product.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
+                    <img 
+                        src={selectedImage} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-1000" 
+                    />
                 </Motion.div>
 
-                {/* Miniaturas */}
                 <div className="flex gap-4 justify-center">
                     {images.map((img, index) => (
                         <button 
                             key={index}
                             onClick={() => setSelectedImage(img)}
-                            className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-scoop-pink scale-110 shadow-md' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                            className={`w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${selectedImage === img ? 'border-scoop-pink scale-110 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'}`}
                         >
-                            <img src={img} className="w-full h-full object-cover" />
+                            <img src={img} className="w-full h-full object-cover" alt="miniatura" />
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* 📝 COLUNA DA DIREITA: DETALHES */}
-            <div className="flex flex-col justify-center">
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-scoop-blue/10 text-scoop-blue text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            {/* DETALHES */}
+            <div className="flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                    <span className="bg-scoop-pink/10 text-scoop-pink text-sm font-black px-6 py-2 rounded-full uppercase tracking-widest">
                         {product.category}
                     </span>
-                    <div className="flex text-yellow-400">
-                        <Star size={16} fill="currentColor" />
-                        <Star size={16} fill="currentColor" />
-                        <Star size={16} fill="currentColor" />
-                        <Star size={16} fill="currentColor" />
-                        <Star size={16} fill="currentColor" />
+                    <div className="flex text-yellow-400 gap-1">
+                        {[...Array(5)].map((_, i) => <Star key={i} size={20} fill="currentColor" />)}
                     </div>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl font-bubble text-gray-800 mb-4">{product.name}</h1>
+                <h1 className="text-5xl md:text-6xl font-bubble text-gray-800 mb-6 leading-tight">
+                    {product.name}
+                </h1>
                 
-                <p className="text-gray-500 font-hand text-xl leading-relaxed mb-8">
+                <p className="text-gray-500 font-hand text-2xl leading-relaxed mb-10">
                     {product.description}
                 </p>
 
-                {/* Seletor se for Scoop */}
                 {product.category === "Scoops" && (
-                    <div className="mb-8">
-                        <span className="block text-sm font-bold text-gray-400 mb-2 uppercase">Escolha o tamanho:</span>
-                        <div className="flex gap-3">
+                    <div className="mb-10 p-6 bg-scoop-pink/5 rounded-3xl border border-scoop-pink/10">
+                        <span className="block text-xs font-black text-scoop-purple/60 mb-4 uppercase tracking-tighter">
+                            Escolha o seu combo:
+                        </span>
+                        <div className="flex gap-4">
                             {[1, 2, 3].map(qtd => (
                                 <button
                                     key={qtd}
                                     onClick={() => setScoops(qtd)}
-                                    className={`px-6 py-3 rounded-xl font-bold transition-all ${scoops === qtd ? 'bg-scoop-pink text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-lg transition-all duration-300 ${scoops === qtd ? 'bg-scoop-pink text-white shadow-xl scale-105' : 'bg-white text-gray-400 border border-gray-100 hover:text-scoop-pink'}`}
                                 >
                                     {qtd}x
                                 </button>
@@ -123,23 +137,24 @@ export default function ProductDetails() {
                     </div>
                 )}
 
-                <div className="mt-auto pt-6 border-t border-gray-100 flex flex-col md:flex-row items-center gap-6 justify-between">
+                <div className="mt-auto pt-8 border-t border-gray-50 flex flex-col sm:flex-row items-center gap-8 justify-between">
                     <div>
-                        <span className="block text-gray-400 text-sm font-bold">PREÇO TOTAL</span>
-                        <span className="text-4xl font-bold text-scoop-pink">
-                            {product.category === "Scoops" 
-                                ? (scoops === 1 ? "R$ 60,00" : scoops === 2 ? "R$ 110,00" : "R$ 150,00")
-                                : `R$ ${product.price}`
-                            }
+                        <span className="block text-gray-400 text-xs font-black uppercase mb-1">Investimento Total</span>
+                        <span className="text-5xl font-black text-scoop-pink tracking-tighter">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                                product.category === "Scoops" 
+                                    ? (scoops === 1 ? 60 : scoops === 2 ? 110 : 150)
+                                    : product.price
+                            )}
                         </span>
                     </div>
 
                     <button 
                         onClick={handleBuy}
-                        className="w-full md:w-auto bg-scoop-blue hover:bg-cyan-500 text-white font-bold text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-cyan-200/50 transition-all active:scale-95 flex items-center justify-center gap-3"
+                        className="w-full sm:w-auto bg-scoop-blue hover:bg-scoop-pink text-white font-black text-xl px-12 py-5 rounded-[2rem] shadow-2xl hover:shadow-pink-200 transition-all duration-500 active:scale-95 flex items-center justify-center gap-4 uppercase tracking-widest"
                     >
-                        <ShoppingBag />
-                        Adicionar ao Carrinho
+                        <ShoppingBag size={24} />
+                        Pegar Agora!
                     </button>
                 </div>
             </div>

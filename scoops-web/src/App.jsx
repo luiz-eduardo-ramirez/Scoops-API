@@ -40,6 +40,7 @@ function App() {
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/admin-deliveries" element={<AdminDeliveries />} />
           <Route path="/admin-deliveries-history" element={<AdminDeliveriesHistory />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
         </Routes>
 
 
