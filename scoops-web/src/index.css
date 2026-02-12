@@ -11,6 +11,12 @@ body {
   font-family: 'Fredoka', sans-serif;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Evita scroll horizontal indesejado */
+}
+
 /* --- Animação para o Botão do WhatsApp --- */
 @keyframes bounce-in {
   0% { transform: scale(0); opacity: 0; }

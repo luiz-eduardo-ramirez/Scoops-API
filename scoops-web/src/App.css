@@ -1,15 +1,21 @@
 #root {
-  max-width: 1280px;
+  /* Aumentamos para 100% ou um valor bem maior para ocupar a tela toda */
+  width: 100%;
+  max-width: 1600px; 
   margin: 0 auto;
-  padding: 2rem;
+  /* Mantemos o padding apenas no topo/baixo se desejar, mas reduzimos as laterais */
+  padding: 1rem 2rem; 
   text-align: center;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  /* Aumentamos de 6em para 10em para dar mais destaque */
+  height: 120px; 
+  width: auto;
+  padding: 1rem;
   will-change: filter;
   transition: filter 300ms;
+  text-align: center
 }
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
