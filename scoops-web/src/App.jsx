@@ -17,6 +17,7 @@ import AdminProducts from "./pages/AdminProducts";
 import ProductDetails from "./pages/ProductDetails";
 import AdminSuppliers from "./pages/AdminSuppliers";
 import AdminDeliveries from "./pages/AdminDeliveries";
+import AdminDeliveriesHistory from "./pages/AdminDeliveriesHistory";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/admin-deliveries" element={<AdminDeliveries />} />
+          <Route path="/admin-deliveries-history" element={<AdminDeliveriesHistory />} />
         </Routes>
 
 

@@ -1,4 +1,4 @@
-import { ShoppingCart, LogOut, ShoppingBag, ClipboardList, Package, Settings, Plus, Truck  } from "lucide-react"; 
+import { ShoppingCart, LogOut, ShoppingBag, ClipboardList, Package, Settings, Plus, Truck, History  } from "lucide-react"; 
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { useCart } from "../context/CartContext";
@@ -62,6 +62,17 @@ export default function Navbar() {
                       <span className="hidden lg:inline">Novo</span>
                     </Link>
 
+                    <Link to="/admin-deliveries-history" className={btnStyle} title="Histórico de Entradas">
+                      <History size={18} />
+                      <span className="hidden lg:inline">Histórico</span>
+                    </Link>
+
+                    {/* Botão Gestão (NOVO) */}
+                    <Link to="/admin-products" className={managementBtnStyle} title="Gerenciar Estoque">
+                      <Settings size={18} />
+                      <span className="hidden md:inline">Gestão</span>
+                    </Link>
+
                     <Link to="/admin-suppliers" className={btnStyle} title="Gerenciar Fornecedores">
                       <Truck size={18} />
                       <span className="hidden lg:inline">Fornecedores</span>
@@ -71,13 +82,7 @@ export default function Navbar() {
                       <ClipboardList size={18} />
                       <span className="hidden lg:inline">Entregas</span>
                     </Link>
-
-                    {/* Botão Gestão (NOVO) */}
-                    <Link to="/admin-products" className={managementBtnStyle} title="Gerenciar Estoque">
-                      <Settings size={18} />
-                      <span className="hidden md:inline">Gestão</span>
-                    </Link>
-
+                    
                     {/* Botão Pedidos */}
                     <Link to="/admin-orders" className={btnStyle} title="Ver Pedidos">
                       <Package size={18} />
