@@ -153,8 +153,6 @@ namespace Scoops.Management.API.Controllers
                 return NotFound("Pedido não encontrado.");
             }
 
-            // Mock de código PIX (Exemplo estático para teste)
-            // Na vida real, aqui você chamaria o Banco Central ou um Gateway (Mercado Pago, StarkBank, etc)
             var pixCodeMock = "00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-4266141740005204000053039865405" + order.Total.ToString("F2").Replace(",", ".") + "5802BR5913Scoops Amanda6008Sao Paulo62070503***6304ABCD";
 
             return Ok(new PixResponseDTO(pixCodeMock, order.Total));
