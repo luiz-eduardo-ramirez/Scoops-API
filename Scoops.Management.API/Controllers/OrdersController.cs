@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Scoops.Management.API.Application.DTOs;
 using Scoops.Management.API.Domain.Entities;
 using Scoops.Management.API.Infrastructure.Data;
+using Scoops.Management.API.Application.DTOs;
 
 namespace Scoops.Management.API.Controllers
 {
@@ -141,6 +142,22 @@ namespace Scoops.Management.API.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(order);
+        }
+        [HttpPost("{id}/pix")]
+        public async Task<ActionResult<PixResponseDTO>> GeneratePix(long id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                return NotFound("Pedido não encontrado.");
+            }
+
+            // Mock de código PIX (Exemplo estático para teste)
+            // Na vida real, aqui você chamaria o Banco Central ou um Gateway (Mercado Pago, StarkBank, etc)
+            var pixCodeMock = "00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-4266141740005204000053039865405" + order.Total.ToString("F2").Replace(",", ".") + "5802BR5913Scoops Amanda6008Sao Paulo62070503***6304ABCD";
+
+            return Ok(new PixResponseDTO(pixCodeMock, order.Total));
         }
     }
 }
