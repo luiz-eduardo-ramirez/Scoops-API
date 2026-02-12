@@ -37,6 +37,8 @@ namespace Scoops.Management.API.Controllers
                 var product = await _context.Products.FindAsync(itemDto.ProductId);
                 if (product == null) return BadRequest($"Produto ID {itemDto.ProductId} não encontrado.");
 
+                product.StockQuantity += itemDto.Quantity;
+
                 var deliveryItem = new DeliveryItem
                 {
                     ProductId = itemDto.ProductId,
@@ -51,7 +53,7 @@ namespace Scoops.Management.API.Controllers
             // 4. Calcula Total
             delivery.CalculateTotal();
 
-            // 5. Salva Tudo (Entity Framework entende o grafo de objetos e salva pai e filhos)
+            // 5. Salva Tudo 
             _context.Deliveries.Add(delivery);
             await _context.SaveChangesAsync();
 
@@ -61,7 +63,7 @@ namespace Scoops.Management.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Include traz os dados relacionados (Eager Loading)
+            // Include traz os dados relacionados 
             var deliveries = await _context.Deliveries
                 .Include(d => d.Supplier)
                 .Include(d => d.Items)
