@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;                // <--- NECESSÁRIO
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Scoops.Management.API.Infrastructure.Data;
+using Scoops.Management.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,10 @@ builder.Services.AddDbContext<ManagementDbContext>(options =>
 // =========================================================================
 // 3. CONFIGURAÇÃO DO JWT (Faltava isso aqui!)
 // =========================================================================
-var key = Encoding.ASCII.GetBytes("EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!"); // AVISO: Use a MESMA chave que está no Auth API
+var secretKey = "EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!";
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 builder.Services.AddAuthentication(x =>
 {

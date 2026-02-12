@@ -24,7 +24,6 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsAuthDB;User Id=sa;Password=SuaSenhaForte@123;TrustServerCertificate=True;
       - ASPNETCORE_ENVIRONMENT=Development
-      # --- NOVAS VARIÁVEIS DE AMBIENTE ---
       - ADMIN_EMAIL=admin@scoopsamanda.com
       - ADMIN_PASSWORD=password
     depends_on:
@@ -32,7 +31,7 @@ services:
     networks:
       - scoops-network
 
-  # 3. Microsserviço de Gestão
+  # 3. Microsserviço de Gestão (COM PERSISTÊNCIA DE IMAGENS AGORA)
   management-api:
     build:
       context: ./Scoops.Management.API
@@ -47,15 +46,18 @@ services:
       - sqlserver
     networks:
       - scoops-network
+    # --- ADICIONADO: VOLUME PARA SALVAR FOTOS NO WINDOWS ---
+    volumes:
+      - ./uploads:/app/wwwroot/images
 
-  # 4. Frontend React (NOVO) ⚛️
+  # 4. Frontend React 
   frontend:
     build:
       context: ./scoops-web
       dockerfile: Dockerfile
     container_name: scoops-frontend
     ports:
-      - "3000:80" # Acessar em http://localhost:3000
+      - "3000:80"
     depends_on:
       - auth-api
       - management-api
