@@ -44,14 +44,16 @@ export default function Admin() {
     }
 
     try {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("description", description);
-      formData.append("price", price);
-      formData.append("category", category);
-      formData.append("file", file); // Enviando apenas o campo 'file'
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("description", description);
+  formData.append("price", price);
+  formData.append("category", category);
+  formData.append("file", file);
 
-      await api.post("http://localhost:5000/api/products", formData);
+  // Use a URL completa da porta 5000 (Management)
+  await api.post("/products", formData);
+  
 
       setStatus({ type: "success", message: "Produto criado com sucesso! 🎉" });
       

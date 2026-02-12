@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Trash2, ChevronLeft, ChevronRight, Package, Loader2 } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, Package, Loader2, AlertTriangle } from "lucide-react";
 import { motion as Motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
@@ -17,25 +17,21 @@ const rowVariants = {
   visible: { opacity: 1, x: 0 }
 };
 
+
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      // O .NET retorna uma lista direta, não um objeto "Page" do Spring
-      // Se quiser paginação real, teríamos que ajustar o Controller do .NET
-      // Para o MVP, o endpoint retorna a lista toda se não passar params
-      const res = await api.get(`/products?page=${page}&size=5`);
+      // Ajustado para refletir a paginação que o .NET está processando
+      const res = await api.get(`/products/paged?page=${page}&size=5`);
       
-      // Ajuste: O .NET retorna a lista direto, ou precisamos ver como ficou o Controller
-      // Se o Controller retorna List<Product>, então res.data É a lista.
-      setProducts(res.data); 
-      setTotalPages(1); // Simplificação para o MVP
+      // O .NET retorna a lista direta no corpo da resposta
+      setProducts(res.data);
     } catch (error) {
         console.error("Erro ao buscar produtos", error);
     } finally {
@@ -49,9 +45,7 @@ export default function AdminProducts() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Tem certeza que deseja remover este anúncio?")) return;
-
     setDeletingId(id);
-
     try {
       await api.delete(`/products/${id}`);
       fetchProducts();
@@ -69,17 +63,17 @@ export default function AdminProducts() {
         <Motion.div 
             initial={{ opacity: 0, y: 10 }} 
             animate={{ opacity: 1, y: 0 }} 
-            className="max-w-5xl mx-auto p-6 mt-6"
+            className="max-w-[95%] mx-auto p-6 mt-6" // Expandido conforme novo design global
         >
         <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bubble text-scoop-pink drop-shadow-sm">Gestão de Anúncios 📋</h1>
+            <h1 className="text-4xl font-bubble text-scoop-pink drop-shadow-sm">Gestão de Anúncios 📋</h1>
 
-            <div className="bg-scoop-blue/10 text-scoop-blue px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-sm">
-                <Package size={18} /> {products.length} nesta página
+            <div className="bg-scoop-blue/10 text-scoop-blue px-6 py-2 rounded-full font-black flex items-center gap-2 shadow-sm">
+                <Package size={20} /> {products.length} itens listados
             </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-white flex flex-col min-h-[400px]">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-8 border-white flex flex-col min-h-[500px]">
 
             {loading ? (
             <div className="flex-1 flex items-center justify-center">
@@ -88,11 +82,12 @@ export default function AdminProducts() {
             ) : (
             <>
                 <table className="w-full text-left border-collapse">
-                <thead className="bg-scoop-bg text-scoop-purple font-bold uppercase text-sm tracking-wider">
+                <thead className="bg-scoop-bg text-scoop-purple font-black uppercase text-xs tracking-[0.2em]">
                     <tr>
-                        <th className="p-4">Produto</th>
-                        <th className="p-4 hidden sm:table-cell">Categoria</th>
-                        <th className="p-4">Preço</th>
+                        <th className="p-6">Produto</th>
+                        <th className="p-6 hidden md:table-cell">Categoria</th>
+                        <th className="p-6">Estoque</th> {/* NOVA COLUNA */}
+                        <th className="p-6">Preço</th>
                         <th className="p-4 text-center">Ações</th>
                     </tr>
                 </thead>
@@ -102,36 +97,52 @@ export default function AdminProducts() {
                     <Motion.tr 
                         key={p.id} 
                         variants={rowVariants} 
-                        className="border-b border-gray-100 hover:bg-scoop-bg/20 transition-colors"
+                        className="border-b border-gray-50 hover:bg-scoop-bg/30 transition-colors group"
                     >
-                        <td className="p-4 flex gap-3 items-center">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 shrink-0">
-                                <img src={p.imageUrl} className="w-full h-full object-cover" alt={p.name} />
+                        <td className="p-6 flex gap-4 items-center">
+                            <div className="w-16 h-16 rounded-[1.2rem] overflow-hidden shadow-md border-2 border-white bg-gray-50 shrink-0">
+                                {/* Adicionado encodeURI para prevenir 404 em imagens */}
+                                <img 
+                                    src={p.imageUrl ? encodeURI(p.imageUrl) : ""} 
+                                    className="w-full h-full object-cover transition-transform group-hover:scale-110" 
+                                    alt={p.name} 
+                                />
                             </div>
-                            <span className="font-bold text-gray-700 line-clamp-1">{p.name}</span>
+                            <span className="font-black text-gray-700 text-lg">{p.name}</span>
                         </td>
 
-                        <td className="p-4 hidden sm:table-cell">
-                            <span className="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-1 rounded-md uppercase">
+                        <td className="p-6 hidden md:table-cell">
+                            <span className="bg-white text-scoop-purple text-[10px] font-black px-3 py-1 rounded-full uppercase border border-scoop-purple/20">
                                 {p.category}
                             </span>
                         </td>
 
-                        <td className="p-4 font-bold text-scoop-pink">
+                        {/* EXIBIÇÃO DO ESTOQUE COM CORES DINÂMICAS */}
+                        <td className="p-6">
+                            <div className={`flex items-center gap-2 font-black ${
+                                p.stockQuantity <= 0 ? 'text-red-500' : 
+                                p.stockQuantity <= 5 ? 'text-orange-500' : 'text-green-500'
+                            }`}>
+                                {p.stockQuantity <= 0 && <AlertTriangle size={16} className="animate-pulse" />}
+                                {p.stockQuantity} un
+                            </div>
+                        </td>
+
+                        <td className="p-6 font-black text-scoop-pink text-xl tracking-tighter">
                             {Number(p.price).toLocaleString("pt-BR", {
                                 style: "currency",
                                 currency: "BRL"
                             })}
                         </td>
 
-                        <td className="p-4 text-center">
+                        <td className="p-6 text-center">
                             <button
                                 disabled={deletingId === p.id}
                                 onClick={() => handleDelete(p.id)}
-                                className="p-2 rounded-xl text-red-400 hover:bg-red-500 hover:text-white transition active:scale-90 disabled:opacity-50"
+                                className="p-3 rounded-2xl text-red-300 hover:bg-red-500 hover:text-white transition-all active:scale-90 disabled:opacity-50 shadow-sm hover:shadow-red-200"
                                 title="Excluir"
                             >
-                                {deletingId === p.id ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
+                                {deletingId === p.id ? <Loader2 size={24} className="animate-spin" /> : <Trash2 size={24} />}
                             </button>
                         </td>
                     </Motion.tr>
@@ -140,34 +151,36 @@ export default function AdminProducts() {
                 </table>
 
                 {products.length === 0 && (
-                <div className="flex-1 flex flex-col items-center justify-center text-gray-300 gap-2">
-                    <Package size={48} className="opacity-20" />
-                    <p className="font-hand text-xl">Nenhum anúncio encontrado</p>
+                <div className="flex-1 flex flex-col items-center justify-center text-gray-300 gap-4 py-20">
+                    <Package size={64} className="opacity-10" />
+                    <p className="font-hand text-3xl italic">Nenhum anúncio por aqui... ✨</p>
                 </div>
                 )}
             </>
             )}
 
             {/* CONTROLES DE PAGINAÇÃO */}
-            <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50 mt-auto">
+            <div className="p-6 border-t border-gray-50 flex justify-between items-center bg-white mt-auto">
                 <button 
                     disabled={page === 0 || loading} 
                     onClick={() => setPage(p => Math.max(0, p - 1))}
-                    className="flex items-center gap-1 font-bold text-scoop-blue disabled:text-gray-300 transition hover:-translate-x-1 disabled:hover:translate-x-0"
+                    className="flex items-center gap-2 font-black text-scoop-blue disabled:text-gray-200 transition-all hover:-translate-x-2"
                 >
-                    <ChevronLeft size={18} /> Anterior
+                    <ChevronLeft size={24} /> ANTERIOR
                 </button>
 
-                <span className="font-hand text-lg text-gray-500">
-                    Página <strong className="text-scoop-pink font-sans">{page + 1}</strong> de {totalPages || 1}
-                </span>
+                <div className="bg-scoop-bg px-6 py-2 rounded-2xl border border-gray-50">
+                    <span className="font-bubble text-xl text-scoop-purple">
+                        Página <strong className="text-scoop-pink">{page + 1}</strong>
+                    </span>
+                </div>
 
                 <button 
-                    disabled={page + 1 >= totalPages || loading} 
+                    disabled={products.length < 5 || loading} 
                     onClick={() => setPage(p => p + 1)}
-                    className="flex items-center gap-1 font-bold text-scoop-blue disabled:text-gray-300 transition hover:translate-x-1 disabled:hover:translate-x-0"
+                    className="flex items-center gap-2 font-black text-scoop-blue disabled:text-gray-200 transition-all hover:translate-x-2"
                 >
-                    Próxima <ChevronRight size={18} />
+                    PRÓXIMA <ChevronRight size={24} />
                 </button>
             </div>
 
