@@ -1,13 +1,13 @@
-# 🍦 Scoops API - Plataforma de Gestão de Entregas
+# Scoops API - Plataforma de Gestão de Entregas
 
 ![Net](https://img.shields.io/badge/.NET%208-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![SqlServer](https://img.shields.io/badge/SQL%20Server-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
 
-Este repositório contém a solução do desafio técnico para a vaga **Full Stack .NET**. O projeto consiste em um MVP (Minimum Viable Product) de uma arquitetura de microsserviços para gerenciar autenticação, fornecedores e entregas de estoque.
+Este repositório contém a solução do desafio técnico para a vaga **Full Stack .NET**. O projeto consiste em um MVP (Minimum Viable Product) de uma arquitetura de microsserviços para gerenciar autenticação, fornecedores e entregas de estoque. O tema foi inspirado em uma ideia de e-commerce para um pequeno empreendimento em que eu e minha namorada trabalhamos.
 
-## 🏗️ Arquitetura
+## Arquitetura e Decisões Técnicas
 
 O sistema foi desenvolvido seguindo os princípios da **Clean Architecture** e **Microsserviços**, garantindo separação de responsabilidades, testabilidade e escalabilidade.
 
@@ -17,7 +17,7 @@ O sistema foi desenvolvido seguindo os princípios da **Clean Architecture** e *
 graph TD
     User[Usuário / Navegador] -->|Acessa| Frontend[Frontend React :3000]
     Frontend -->|Login/Register| AuthAPI[Scoops.Auth.API :5001]
-    Frontend -->|Gestão de Entregas| MgmtAPI[Scoops.Management.API :5050]
+    Frontend -->|Gestão de Entregas| MgmtAPI[Scoops.Management.API :5000]
 
     AuthAPI -->|Lê/Escreve| DB[(SQL Server :1433)]
     MgmtAPI -->|Lê/Escreve| DB
@@ -35,19 +35,30 @@ graph TD
 
 ### Tecnologias Utilizadas
 
-- Backend: .NET 8, C#, ASP.NET Core Web API
+Backend: .NET 8, C#, ASP.NET Core Web API
 
-- ORM: Entity Framework Core (Code First)
+Design Patterns: Clean Architecture, Repository Pattern, Dependency Injection
 
-- Banco de Dados: SQL Server 2022 (Docker)
+ORM: Entity Framework Core (Code First)
 
-- Autenticação: JWT (JSON Web Token) + BCrypt (Hash de Senha)
+Banco de Dados: SQL Server 2022 (Docker)
 
-- Frontend: React.js, Axios, TailwindCSS (ou Styled Components)
+Autenticação: JWT (JSON Web Token) + BCrypt (Hash de Senha)
 
-- Infraestrutura: Docker & Docker Compose
+Frontend: React.js, Axios, TailwindCSS, Framer Motion
 
-- Documentação: Swagger (OpenAPI)
+Infraestrutura: Docker & Docker Compose
+
+Documentação: Swagger (OpenAPI)
+
+## Segurança e Configuração
+
+    Para garantir a segurança e seguir as boas práticas do 12-Factor App, segredos como Connection Strings e Chaves JWT foram removidos do código fonte (appsettings.json) e são injetados via Variáveis de Ambiente no Docker.
+
+    Nota para o Avaliador:
+    Em um ambiente de produção real, o arquivo .env contendo as credenciais jamais seria versionado no Git (estaria no .gitignore).
+
+    No entanto, para facilitar a execução deste teste técnico, mantive o arquivo .env no repositório. Basta clonar e rodar, sem necessidade de configuração manual de chaves.
 
 ## Como Rodar o Projeto
 
@@ -65,8 +76,6 @@ Pré-requisitos
 
 ```bash
 git clone https://github.com/luiz-eduardo-ramirez/Scoops-API
-
-cd scoops-backend-challenge
 ```
 
 2. Rodar o Docker Compose:
@@ -78,6 +87,12 @@ docker compose up --build -d
 3. Aguarde a inicialização:
 
 O SQL Server pode levar de 10 a 30 segundos para estar pronto na primeira execução. Verifique o status com docker ps ou docker logs scoops-sql-server.
+
+## Configuração de Segurança
+
+1. Verifique se o arquivo .env existe na raiz (foi criado com base no .env.example).
+
+2. Execute docker compose up --build.
 
 ## Endpoints e Acesso
 

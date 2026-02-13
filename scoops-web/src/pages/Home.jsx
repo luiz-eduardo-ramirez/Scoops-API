@@ -116,6 +116,7 @@ export default function Home() {
                           image1={product.imageUrl ? encodeURI(product.imageUrl) : null} 
                           description={product.description}
                           category={product.category}
+                          stockQuantity={product.stockQuantity}
                       />
                     </Motion.div>
                   ))}

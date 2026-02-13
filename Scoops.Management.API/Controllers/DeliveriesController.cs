@@ -1,74 +1,52 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Scoops.Management.API.Application.DTOs;
+using Scoops.Management.API.Application.Interfaces;
 using Scoops.Management.API.Domain.Entities;
-using Scoops.Management.API.Infrastructure.Data;
 
 namespace Scoops.Management.API.Controllers
 {
-    [Authorize]
+    [Authorize] // Pode restringir para Roles = "ADMIN" se quiser
     [ApiController]
     [Route("api/deliveries")]
     public class DeliveriesController : ControllerBase
     {
-        private readonly ManagementDbContext _context;
+        private readonly IDeliveryService _service;
 
-        public DeliveriesController(ManagementDbContext context) => _context = context;
+        // Injeção da Interface, não do Banco
+        public DeliveriesController(IDeliveryService service)
+        {
+            _service = service;
+        }
 
         [HttpPost]
         public async Task<IActionResult> RegisterDelivery(RegisterDeliveryRequest request)
         {
-            // 1. Valida Fornecedor
-            var supplier = await _context.Suppliers.FindAsync(request.SupplierId);
-            if (supplier == null) return NotFound("Fornecedor não encontrado.");
-
-            // 2. Cria a Entrega (Cabeçalho)
-            var delivery = new Delivery
+            try
             {
-                SupplierId = request.SupplierId,
-                Moment = DateTime.UtcNow,
-                Status = "COMPLETED"
-            };
+                var delivery = await _service.RegisterDeliveryAsync(request);
 
-            // 3. Processa os Itens
-            foreach (var itemDto in request.Items)
-            {
-                var product = await _context.Products.FindAsync(itemDto.ProductId);
-                if (product == null) return BadRequest($"Produto ID {itemDto.ProductId} não encontrado.");
-
-
-                var deliveryItem = new DeliveryItem
+                return Ok(new
                 {
-                    ProductId = product.Id,
-                    Quantity = itemDto.Quantity,
-                    Price = itemDto.Price, // Preço de custo na entrega
-                    Delivery = delivery // Vincula ao pai
-                };
-
-                delivery.Items.Add(deliveryItem);
+                    Message = "Entrega registrada com sucesso!",
+                    DeliveryId = delivery.Id,
+                    Total = delivery.Total
+                });
             }
-
-            // 4. Calcula Total
-            delivery.CalculateTotal();
-
-            // 5. Salva Tudo 
-            _context.Deliveries.Add(delivery);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Entrega registrada com sucesso!", DeliveryId = delivery.Id, Total = delivery.Total });
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro interno: {ex.Message}");
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Include traz os dados relacionados 
-            var deliveries = await _context.Deliveries
-                .Include(d => d.Supplier)
-                .Include(d => d.Items)
-                .ThenInclude(i => i.Product)
-                .ToListAsync();
-
+            var deliveries = await _service.GetAllDeliveriesAsync();
             return Ok(deliveries);
         }
     }

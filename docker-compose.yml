@@ -1,11 +1,14 @@
+version: '3.8'
+
 services:
-  # 1. Banco de Dados SQL Server (Sem alterações)
+  # 1. Banco de Dados SQL Server
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: scoops-sql-server
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=SuaSenhaForte@123
+      # A senha agora vem do arquivo .env
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
     ports:
       - "1433:1433"
     networks:
@@ -13,7 +16,7 @@ services:
     volumes:
       - sql_data:/var/opt/mssql
 
-  # 2. Microsserviço de Autenticação (CORRIGIDO)
+  # 2. Microsserviço de Autenticação
   auth-api:
     build:
       context: ./Scoops.Auth.API
@@ -22,13 +25,14 @@ services:
     ports:
       - "5001:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsAuthDB;User Id=sa;Password=SuaSenhaForte@123;TrustServerCertificate=True;
+      # Injetamos a senha do banco na string de conexão
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsAuthDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
       - ASPNETCORE_ENVIRONMENT=Development
-      - ADMIN_EMAIL=admin@scoopsamanda.com
-      - ADMIN_PASSWORD=password
-      # --- CONFIGURAÇÃO JWT ADICIONADA ---
-      # Garante que quem ASSINA o token usa esta chave
-      - Jwt__Key=EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!
+      # Credenciais do Admin injetadas
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      # Configuração JWT segura
+      - Jwt__Key=${JWT_KEY}
       - Jwt__Issuer=ScoopsAuth
       - Jwt__Audience=ScoopsManagement
       - Jwt__ExpireHours=2
@@ -37,7 +41,7 @@ services:
     networks:
       - scoops-network
 
-  # 3. Microsserviço de Gestão (CORRIGIDO)
+  # 3. Microsserviço de Gestão
   management-api:
     build:
       context: ./Scoops.Management.API
@@ -46,11 +50,11 @@ services:
     ports:
       - "5000:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsManagementDB;User Id=sa;Password=SuaSenhaForte@123;TrustServerCertificate=True;
+      # Mesma injeção de senha do banco
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsManagementDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
       - ASPNETCORE_ENVIRONMENT=Development
-      # --- CONFIGURAÇÃO JWT ADICIONADA ---
-      # Garante que quem VALIDA o token usa EXATAMENTE a mesma chave acima
-      - Jwt__Key=EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!
+      # A chave deve ser IDÊNTICA à da Auth API para validar o token
+      - Jwt__Key=${JWT_KEY}
       - Jwt__Issuer=ScoopsAuth
       - Jwt__Audience=ScoopsManagement
     depends_on:
@@ -60,7 +64,7 @@ services:
     volumes:
       - ./uploads:/app/wwwroot/images
 
-  # 4. Frontend React (Sem alterações)
+  # 4. Frontend React
   frontend:
     build:
       context: ./scoops-web

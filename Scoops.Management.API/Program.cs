@@ -5,12 +5,14 @@ using System.Text;
 using Scoops.Management.API.Infrastructure.Data;
 using Scoops.Management.API.Services;
 using System.Text.Json.Serialization;
-using System.IdentityModel.Tokens.Jwt; // <--- 1. ADICIONADO: Necessário para manipular o Handler
+using System.IdentityModel.Tokens.Jwt;
+using Scoops.Management.API.Application.Interfaces;
+using Scoops.Management.API.Application.Services;
 
-// <--- 2. ADICIONADO: Impede que o .NET mude os nomes das claims (role -> http://schemas...)
+
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-// Habilita validadores legacy se necessário
+
 AppContext.SetSwitch("Microsoft.AspNetCore.Authentication.JwtBearer.UseSecurityTokenValidator", true);
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,9 +40,7 @@ builder.Services.AddCors(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ManagementDbContext>(options => options.UseSqlServer(connectionString));
 
-// ==============================================================================
-// 🔐 LER CHAVE DO DOCKER
-// ==============================================================================
+
 var secretKey = builder.Configuration["Jwt:Key"];
 
 if (string.IsNullOrEmpty(secretKey))
@@ -49,9 +49,13 @@ if (string.IsNullOrEmpty(secretKey))
 }
 
 var key = Encoding.ASCII.GetBytes(secretKey);
-// ==============================================================================
+
 
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+
+builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+
+
 
 builder.Services.AddAuthentication(x =>
 {
