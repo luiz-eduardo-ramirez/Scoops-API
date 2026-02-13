@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext"; 
 import { CartProvider } from "./context/CartContext"; 
+import PrivateRoute from "./components/PrivateRoute";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -22,35 +25,39 @@ import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <CartProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin-suppliers" element={<AdminSuppliers />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/payment/:id" element={<Payment />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/admin-orders" element={<AdminOrders />} />
-          <Route path="/admin-products" element={<AdminProducts />} />
-          <Route path="/confirm" element={<ConfirmPage />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/products/:id" element={<ProductDetails />} />
-          <Route path="/admin-deliveries" element={<AdminDeliveries />} />
-          <Route path="/admin-deliveries-history" element={<AdminDeliveriesHistory />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* --- ROTAS PÚBLICAS --- */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/product/:id" element={<ProductDetails />} /> {/* Usei o singular */}
+            <Route path="/confirm" element={<ConfirmPage />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
+            {/* --- ROTAS PROTEGIDAS (CLIENTE) --- */}
+            <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
+            <Route path="/payment/:id" element={<PrivateRoute><Payment /></PrivateRoute>} />
+            <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
 
-        <InstagramButton />
-        <WhatsAppButton />
+            {/* --- ROTAS PROTEGIDAS (ADMIN) --- */}
+            <Route path="/admin" element={<PrivateRoute role="ADMIN"><Admin /></PrivateRoute>} />
+            <Route path="/admin-dashboard" element={<PrivateRoute role="ADMIN"><Dashboard /></PrivateRoute>} />
+            <Route path="/admin-products" element={<PrivateRoute role="ADMIN"><AdminProducts /></PrivateRoute>} />
+            <Route path="/admin-orders" element={<PrivateRoute role="ADMIN"><AdminOrders /></PrivateRoute>} />
+            <Route path="/admin-suppliers" element={<PrivateRoute role="ADMIN"><AdminSuppliers /></PrivateRoute>} />
+            <Route path="/admin-deliveries" element={<PrivateRoute role="ADMIN"><AdminDeliveries /></PrivateRoute>} />
+            <Route path="/admin-deliveries-history" element={<PrivateRoute role="ADMIN"><AdminDeliveriesHistory /></PrivateRoute>} />
+          </Routes>
 
-      </BrowserRouter>
-    </CartProvider>
+          <InstagramButton />
+          <WhatsAppButton />
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

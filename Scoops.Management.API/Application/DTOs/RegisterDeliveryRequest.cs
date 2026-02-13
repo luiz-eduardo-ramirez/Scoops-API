@@ -8,7 +8,7 @@ namespace Scoops.Management.API.Application.DTOs
 
     public class DeliveryItemRequest
     {
-        public Guid ProductId { get; set; }
+        public long ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal Price { get; set; }
     }

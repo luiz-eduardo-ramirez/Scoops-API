@@ -1,5 +1,5 @@
 services:
-  # 1. Banco de Dados SQL Server
+  # 1. Banco de Dados SQL Server (Sem alterações)
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: scoops-sql-server
@@ -13,7 +13,7 @@ services:
     volumes:
       - sql_data:/var/opt/mssql
 
-  # 2. Microsserviço de Autenticação
+  # 2. Microsserviço de Autenticação (CORRIGIDO)
   auth-api:
     build:
       context: ./Scoops.Auth.API
@@ -26,12 +26,18 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ADMIN_EMAIL=admin@scoopsamanda.com
       - ADMIN_PASSWORD=password
+      # --- CONFIGURAÇÃO JWT ADICIONADA ---
+      # Garante que quem ASSINA o token usa esta chave
+      - Jwt__Key=EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!
+      - Jwt__Issuer=ScoopsAuth
+      - Jwt__Audience=ScoopsManagement
+      - Jwt__ExpireHours=2
     depends_on:
       - sqlserver
     networks:
       - scoops-network
 
-  # 3. Microsserviço de Gestão (COM PERSISTÊNCIA DE IMAGENS AGORA)
+  # 3. Microsserviço de Gestão (CORRIGIDO)
   management-api:
     build:
       context: ./Scoops.Management.API
@@ -42,15 +48,19 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ScoopsManagementDB;User Id=sa;Password=SuaSenhaForte@123;TrustServerCertificate=True;
       - ASPNETCORE_ENVIRONMENT=Development
+      # --- CONFIGURAÇÃO JWT ADICIONADA ---
+      # Garante que quem VALIDA o token usa EXATAMENTE a mesma chave acima
+      - Jwt__Key=EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!
+      - Jwt__Issuer=ScoopsAuth
+      - Jwt__Audience=ScoopsManagement
     depends_on:
       - sqlserver
     networks:
       - scoops-network
-    # --- ADICIONADO: VOLUME PARA SALVAR FOTOS NO WINDOWS ---
     volumes:
       - ./uploads:/app/wwwroot/images
 
-  # 4. Frontend React 
+  # 4. Frontend React (Sem alterações)
   frontend:
     build:
       context: ./scoops-web

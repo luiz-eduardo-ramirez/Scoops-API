@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer; // ADICIONADO
-using Microsoft.IdentityModel.Tokens;                // ADICIONADO
-using System.Text;                                   // ADICIONADO
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Scoops.Auth.API.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configura CORS (Agora o nome está idêntico: AllowReactApp)
+// 1. Configura CORS
 var MyAllowSpecificOrigins = "AllowReactApp";
 builder.Services.AddCors(options =>
 {
@@ -20,8 +20,19 @@ builder.Services.AddCors(options =>
         });
 });
 
-var secretKey = "EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!";
+// ==============================================================================
+// 🔐 CORREÇÃO DE SEGURANÇA: Ler chave do Docker/appsettings
+// ==============================================================================
+var secretKey = builder.Configuration["Jwt:Key"]; // Lê a variável de ambiente Jwt__Key
+
+if (string.IsNullOrEmpty(secretKey))
+{
+    // Para a aplicação imediatamente se não houver chave configurada
+    throw new Exception("A chave JWT (Jwt:Key) não foi encontrada nas configurações!");
+}
+
 var key = Encoding.ASCII.GetBytes(secretKey);
+// ==============================================================================
 
 builder.Services.AddAuthentication(x =>
 {
@@ -36,6 +47,8 @@ builder.Services.AddAuthentication(x =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
+
+        // Mantendo suas configurações originais para simplificar o debug inicial
         ValidateIssuer = false,
         ValidateAudience = false
     };
@@ -80,11 +93,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// 5. Ordem dos Middlewares (Correto!)
+// 5. Ordem dos Middlewares
 app.UseCors(MyAllowSpecificOrigins);
 
 app.UseStaticFiles();
-// app.UseHttpsRedirection(); // Comentado para evitar erro de SSL no Docker
+// app.UseHttpsRedirection(); // Comentado para ambiente Docker dev
 
 app.UseAuthentication();
 app.UseAuthorization();

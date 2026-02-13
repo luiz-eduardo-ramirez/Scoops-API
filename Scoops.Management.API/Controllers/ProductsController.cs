@@ -89,6 +89,7 @@ namespace Scoops.Management.API.Controllers
                 Price = request.Price,
                 Category = request.Category,
                 ImageUrl = imageUrl, // Salva o caminho relativo
+                StockQuantity = request.StockQuantity,
                 IsActive = true
             };
 

@@ -37,11 +37,10 @@ namespace Scoops.Management.API.Controllers
                 var product = await _context.Products.FindAsync(itemDto.ProductId);
                 if (product == null) return BadRequest($"Produto ID {itemDto.ProductId} não encontrado.");
 
-                product.StockQuantity += itemDto.Quantity;
 
                 var deliveryItem = new DeliveryItem
                 {
-                    ProductId = itemDto.ProductId,
+                    ProductId = product.Id,
                     Quantity = itemDto.Quantity,
                     Price = itemDto.Price, // Preço de custo na entrega
                     Delivery = delivery // Vincula ao pai

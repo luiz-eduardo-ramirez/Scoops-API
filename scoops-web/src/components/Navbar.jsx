@@ -116,6 +116,10 @@ export default function Navbar() {
                                             </Link>
                                         </div>
 
+                                        <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-scoop-blue/10 hover:text-scoop-blue rounded-xl text-gray-600 font-bold text-sm transition-colors">
+                                            <Plus size={18} /> Novo Produto
+                                        </Link>
+
                                         <Link to="/admin-deliveries" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-scoop-blue/10 hover:text-scoop-blue rounded-xl text-gray-600 font-bold text-sm transition-colors">
                                             <ClipboardList size={18} /> Nova Entrada
                                         </Link>

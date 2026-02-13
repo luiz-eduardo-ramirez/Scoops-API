@@ -4,47 +4,50 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Scoops.Management.API.Infrastructure.Data;
 using Scoops.Management.API.Services;
-using System.Text.Json.Serialization; // Necessário para o IgnoreCycles
+using System.Text.Json.Serialization;
+
+// Habilita validadores legacy se necessário (mantido do seu código original)
+AppContext.SetSwitch("Microsoft.AspNetCore.Authentication.JwtBearer.UseSecurityTokenValidator", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =========================================================================
-// 1. CONFIGURAÇÃO DOS CONTROLLERS + JSON (CORREÇÃO AQUI)
-// =========================================================================
-// O .AddJsonOptions deve ficar GRUDADO no AddControllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Isso resolve o erro "Possible object cycle" (Erro 500)
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
-// 2. Configura o CORS
+// --- 2. CORS ---
 var MyAllowSpecificOrigins = "AllowReactApp";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
+    options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
-// 3. Configura o Banco
+// --- 3. BANCO DE DADOS ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ManagementDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ManagementDbContext>(options => options.UseSqlServer(connectionString));
 
-// =========================================================================
-// 4. CONFIGURAÇÃO DO JWT
-// =========================================================================
-var secretKey = "EstaEUmaChaveSuperSecretaComMaisDe32CaracteresParaOProjetoScoops2026!";
+// ==============================================================================
+// 🔐 CORREÇÃO DE SEGURANÇA: Ler chave do Docker
+// ==============================================================================
+var secretKey = builder.Configuration["Jwt:Key"]; // Lê a variável de ambiente Jwt__Key
+
+if (string.IsNullOrEmpty(secretKey))
+{
+    // Falha rápida se a chave não estiver configurada no Docker
+    throw new Exception("A chave JWT (Jwt:Key) não foi encontrada nas configurações do Management API!");
+}
+
 var key = Encoding.ASCII.GetBytes(secretKey);
+// ==============================================================================
 
-// Registra o serviço de Upload de Arquivos
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 builder.Services.AddAuthentication(x =>
@@ -59,13 +62,37 @@ builder.Services.AddAuthentication(x =>
     x.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
+        // Agora usa a chave dinâmica vinda do Docker
         IssuerSigningKey = new SymmetricSecurityKey(key),
+
+        TryAllIssuerSigningKeys = true,
+
+        // Mantendo suas configurações de validação
         ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
+
+        // Mapeamento de Claims (Importante conferir se bate com o AuthController)
+        RoleClaimType = "role",
+        NameClaimType = "unique_name"
+    };
+
+    // Logs detalhados para ajudar no debug (Mantidos)
+    x.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"\n🔴 AUTH FALHOU: {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine($"\n🟢 SUCESSO! Usuário validado: {context.Principal.Identity.Name}");
+            return Task.CompletedTask;
+        }
     };
 });
-
-// =========================================================================
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -78,31 +105,27 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// 5. ATIVA O CORS (Antes de Auth!)
 app.UseCors(MyAllowSpecificOrigins);
-
-// Permite servir as imagens da pasta wwwroot
 app.UseStaticFiles();
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthentication(); // 1. Quem é você?
+app.UseAuthorization();  // 2. O que você pode fazer?
 
 app.MapControllers();
 
-
+// Inicialização do Banco
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ManagementDbContext>();
-
         context.Database.EnsureCreated();
-        Console.WriteLine("--> Banco de dados verificado/criado com sucesso!");
+        Console.WriteLine("--> Banco de dados Management OK!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine("--> Erro ao criar banco de dados: " + ex.Message);
+        Console.WriteLine("--> Erro no banco: " + ex.Message);
     }
 }
 

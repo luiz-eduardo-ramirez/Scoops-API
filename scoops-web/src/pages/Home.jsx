@@ -17,7 +17,7 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [size] = useState(8); // Aumentamos para 8 para preencher melhor o grid de 4 colunas
+  const [size] = useState(8); 
   const [category, setCategory] = useState("Todas");
 
   const categories = ["Todas", "Scoops", "Beleza", "Acessórios", "Papelaria"];
@@ -32,7 +32,11 @@ export default function Home() {
       const response = await api.get(`/products/paged?page=${page}&size=${size}`);
       let data = response.data;
 
+      // ATENÇÃO: Se o backend retornar um objeto paginado { items: [], total: 0 }, 
+      // ajuste para: let data = response.data.items || response.data;
+      
       if (category !== "Todas") {
+        // Filtragem no Front (Idealmente isso deveria ser no backend)
         data = data.filter(p => p.category === category);
       }
 
@@ -48,10 +52,8 @@ export default function Home() {
     <div className="min-h-screen pb-10 bg-scoop-bg">
       <Navbar />
 
-      {/* AJUSTE: max-w-[95%] para espalhar o conteúdo pelas laterais */}
       <main className="max-w-[95%] mx-auto p-4">
         
-        {/* Animação do Cabeçalho - Título Aumentado */}
         <Motion.div 
           variants={headerVariants}
           initial="hidden"
@@ -97,7 +99,6 @@ export default function Home() {
           </Motion.div>
         ) : (
           <>
-            {/* GRID: 4 colunas em telas grandes (xl) e gap maior para respiro */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
               <AnimatePresence mode="wait">
                   {products.map(product => (
@@ -138,7 +139,7 @@ export default function Home() {
               </div>
 
               <button
-                disabled={products.length < size}
+                disabled={products.length < size} // Desabilita se vieram menos itens que o tamanho da página
                 onClick={() => setPage(p => p + 1)}
                 className="px-6 py-3 bg-white rounded-2xl shadow-lg disabled:opacity-30 hover:bg-gray-50 transition-all font-black text-scoop-purple hover:translate-x-1"
               >

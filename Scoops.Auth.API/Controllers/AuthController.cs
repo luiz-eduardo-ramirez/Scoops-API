@@ -65,39 +65,44 @@ namespace Scoops.Auth.API.Controllers
             var tokenString = GenerateJwtToken(user);
 
             // 2. Monta a resposta aqui no Controller
-            // O construtor do AuthResponse vai converter a Role para lista automaticamente
             return Ok(new AuthResponse(
-                user.Id,                    // ID (Muito importante pro React)
+                user.Id,                    // ID 
                 tokenString,                // Token
-                user.Name ?? user.Login,    // Username (Nome de exibição)
+                user.Name ?? user.Login,    // Username 
                 user.Login,                 // Email
                 user.Role
             ));
         }
 
-        // Método auxiliar: A responsabilidade dele é APENAS devolver a string do token
+        // Método auxiliar: Gera o Token assinado com a chave do Docker
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            var jwtKey = _configuration["JWT_SECRET"] ?? "Chave_Secreta_Padrao_Local_Apenas_Para_Dev_123";
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+            {
+                throw new Exception("A configuração 'Jwt:Key' não foi encontrada.");
+            }
             var key = Encoding.ASCII.GetBytes(jwtKey);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] {
+                    // MANTENHA ESTES:
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.Login),
-                    new Claim(ClaimTypes.Role, user.Role)
+                    
+                    // 🔴 MUDE ESTA LINHA:
+                    // De: new Claim(ClaimTypes.Role, user.Role)
+                    // Para:
+                    new Claim("role", user.Role)
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
-            // Cria o objeto do token
             var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            // CONVERTE O OBJETO PARA STRING (Isso resolve o erro CS1503)
             return tokenHandler.WriteToken(token);
         }
     }

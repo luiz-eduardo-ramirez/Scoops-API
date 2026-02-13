@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { ArrowLeft, Lock, User, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import logoImg from "../assets/logo.png";
 import ErrorModal from "../components/ErrorModal";
+import { AuthContext } from "../context/AuthContext";
 import { motion as Motion } from "framer-motion";
 
 export default function Login() {
+  const { login: authLogin } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [username, setUsername] = useState("");
@@ -25,42 +27,37 @@ const handleLogin = async (e) => {
     password 
 });
 
-// 1. Desestruture usando os nomes que você definiu no [JsonPropertyName]
-const { accessToken, username: displayName, roles } = response.data;
 
-// 2. O seu DTO agora envia 'roles' como uma LISTA. 
-// Pegamos o primeiro item para manter sua lógica de navegação.
-const primaryRole = roles && roles.length > 0 ? roles[0] : "USER";
+      const { accessToken, username: displayName, roles } = response.data;
+      const primaryRole = roles && roles.length > 0 ? roles[0] : "USER";
 
-// 3. Salve usando os novos nomes
-localStorage.setItem("scoops_token", accessToken);
-localStorage.setItem("scoops_role", primaryRole);
-localStorage.setItem("scoops_user", displayName); // Usando o 'username' do JSON
+      // --- CORREÇÃO DE SINCRONISMO ---
+      // 1. Salva no localStorage IMEDIATAMENTE (Síncrono)
+      // Isso garante que o api.js vai encontrar o token na próxima requisição
+      localStorage.setItem("scoops_token", accessToken);
+      localStorage.setItem("scoops_user", displayName);
+      localStorage.setItem("scoops_role", primaryRole);
+      // Apenas o nome de exibição (que não vai no contexto de segurança) salvamos aqui
+      authLogin(accessToken, primaryRole);
 
-//api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      // Redirecionamento baseado na role
+      if (primaryRole === "ADMIN") {
+          navigate("/admin-products"); 
+      } else {
+          navigate("/");
+      }
 
-// 4. Lógica de navegação atualizada
-if (primaryRole === "ADMIN") {
-    navigate("/admin");
-} else {
-    navigate("/");
-}
-
-  } catch (err) {
-    // 4. Debug real do erro
-    console.error("Erro detalhado no login:", err);
-
-    // Se o erro for 401, é senha. Se for outro, a mensagem ajuda a debugar.
-    const message = err.response?.status === 401 
-        ? "Usuário ou senha inválidos." 
-        : "Erro na comunicação com o servidor.";
-        
-    setErrorMessage(message);
-    setShowError(true);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      console.error("Erro detalhado no login:", err);
+      const message = err.response?.status === 401 
+          ? "Usuário ou senha inválidos." 
+          : "Erro na comunicação com o servidor.";
+      setErrorMessage(message);
+      setShowError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-scoop-bg">

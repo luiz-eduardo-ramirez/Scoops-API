@@ -34,14 +34,24 @@ namespace Scoops.Management.API.Controllers
             var lowStock = await _context.Products
                 .CountAsync(p => p.IsActive && p.StockQuantity < 5);
 
-            // 4. Top 5 Produtos Mais Vendidos (Query complexa simplificada)
-            var topProducts = await _context.OrderItems
+            // ====================================================================================
+            // 4. CORREÇÃO: Top 5 Produtos (Execução em Memória para evitar erro de tradução LINQ)
+            // ====================================================================================
+
+            // Passo A: Buscar os dados brutos do banco (Trazemos apenas o necessário)
+            var rawData = await _context.OrderItems
                 .Include(i => i.Product)
-                .GroupBy(i => i.Product.Name)
-                .Select(g => new TopProductDto(g.Key, g.Sum(i => i.Quantity)))
+                .Select(i => new { ProductName = i.Product.Name, Quantity = i.Quantity })
+                .ToListAsync(); // <--- O SQL é executado aqui!
+
+            // Passo B: Agrupar e ordenar na memória do servidor
+            var topProducts = rawData
+                .GroupBy(x => x.ProductName)
+                .Select(g => new TopProductDto(g.Key, g.Sum(x => x.Quantity)))
                 .OrderByDescending(x => x.QuantitySold)
                 .Take(5)
-                .ToListAsync();
+                .ToList();
+            // ====================================================================================
 
             return Ok(new DashboardStats(revenue, totalOrders, lowStock, pendingOrders, topProducts));
         }

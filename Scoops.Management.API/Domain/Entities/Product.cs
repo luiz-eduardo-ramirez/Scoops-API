@@ -26,6 +26,8 @@ namespace Scoops.Management.API.Domain.Entities
 
         public string? Category { get; set; }
 
+        public int StockQuantity { get; set; } = 0;
+
         // Propriedade de navegação (opcional, mas útil se quiser saber quem fornece)
         // public virtual ICollection<DeliveryItem> DeliveryItems { get; set; }
     }
