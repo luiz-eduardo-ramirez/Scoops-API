@@ -118,7 +118,7 @@ export default function AdminOrders() {
                         <div className="flex flex-col">
                             <span className="text-xs text-gray-400 group-hover:text-blue-500">Cliente</span>
                             <span className="text-sm font-bold text-gray-700 capitalize group-hover:text-blue-700 underline decoration-dotted">
-                                {order.clientName || "?"}
+                                {order.clientLogin || "?"}
                             </span>
                         </div>
                     </button>
@@ -192,7 +192,7 @@ export default function AdminOrders() {
                         <div className="bg-blue-50 p-2 rounded-lg text-scoop-blue"><User size={20} /></div>
                         <div>
                             <p className="text-sm text-gray-500">Nome do Cliente</p>
-                            <p className="font-bold text-gray-800 text-lg capitalize">{selectedClientOrder.clientName}</p>
+                            <p className="font-bold text-gray-800 text-lg capitalize">{selectedClientOrder.clientLogin}</p>
                         </div>
                     </div>
 
@@ -201,7 +201,7 @@ export default function AdminOrders() {
                         <div>
                             <p className="text-sm text-gray-500">Telefone / WhatsApp</p>
                             <p className="font-bold text-gray-800 text-lg">
-                                {selectedClientOrder.clientPhone || "Não informado"}
+                                {selectedClientOrder.contactPhone || "Não informado"}
                             </p>
                         </div>
                     </div>
@@ -211,7 +211,7 @@ export default function AdminOrders() {
                         <div>
                             <p className="text-sm text-gray-500">Endereço de Entrega</p>
                             <p className="font-bold text-gray-800">
-                                {selectedClientOrder.clientAddress || "Endereço não cadastrado"}
+                                {selectedClientOrder.deliveryAddress || "Endereço não cadastrado"}
                             </p>
                         </div>
                     </div>

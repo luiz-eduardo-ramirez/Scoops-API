@@ -134,7 +134,7 @@ export default function Navbar() {
                                         
                                         <div className="border-t border-gray-100 mt-2 pt-2">
                                             <button onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-3 hover:bg-red-50 hover:text-red-500 rounded-xl text-red-400 font-bold text-sm transition-colors">
-                                                <LogOut size={18} /> Sair do Sistema
+                                                <LogOut size={18} /> Sair
                                             </button>
                                         </div>
                                     </Motion.div>

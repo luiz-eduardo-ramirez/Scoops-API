@@ -81,10 +81,38 @@ builder.Services.AddAuthentication(x =>
     {
         OnTokenValidated = context =>
         {
-            var name = context.Principal.Identity.Name;
-            var roles = context.Principal.FindAll("role").Select(c => c.Value);
-            Console.WriteLine($"\n🟢 USUÁRIO VALIDADO: {name}");
-            Console.WriteLine($"🟢 ROLES ENCONTRADAS: {string.Join(", ", roles)}");
+            // 4. LOG DE DIAGNÓSTICO REAL
+            // Vamos listar TODAS as claims que o .NET encontrou no seu token
+            Console.WriteLine("\n=== INSPEÇÃO DE TOKEN ===");
+            foreach (var claim in context.Principal.Claims)
+            {
+                Console.WriteLine($"🔍 Tipo: {claim.Type} | Valor: {claim.Value}");
+            }
+
+            var identity = context.Principal.Identity;
+            Console.WriteLine($"👤 Nome Identificado: {identity?.Name}");
+            Console.WriteLine($"🛡️ Está Autenticado? {identity?.IsAuthenticated}");
+            Console.WriteLine("==========================\n");
+
+            return Task.CompletedTask;
+        }
+    }; x.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
+        {
+            // 4. LOG DE DIAGNÓSTICO REAL
+            // Vamos listar TODAS as claims que o .NET encontrou no seu token
+            Console.WriteLine("\n=== INSPEÇÃO DE TOKEN ===");
+            foreach (var claim in context.Principal.Claims)
+            {
+                Console.WriteLine($"🔍 Tipo: {claim.Type} | Valor: {claim.Value}");
+            }
+
+            var identity = context.Principal.Identity;
+            Console.WriteLine($"👤 Nome Identificado: {identity?.Name}");
+            Console.WriteLine($"🛡️ Está Autenticado? {identity?.IsAuthenticated}");
+            Console.WriteLine("==========================\n");
+
             return Task.CompletedTask;
         }
     };
