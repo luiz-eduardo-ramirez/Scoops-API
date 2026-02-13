@@ -5,8 +5,12 @@ using System.Text;
 using Scoops.Management.API.Infrastructure.Data;
 using Scoops.Management.API.Services;
 using System.Text.Json.Serialization;
+using System.IdentityModel.Tokens.Jwt; // <--- 1. ADICIONADO: Necessário para manipular o Handler
 
-// Habilita validadores legacy se necessário (mantido do seu código original)
+// <--- 2. ADICIONADO: Impede que o .NET mude os nomes das claims (role -> http://schemas...)
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+// Habilita validadores legacy se necessário
 AppContext.SetSwitch("Microsoft.AspNetCore.Authentication.JwtBearer.UseSecurityTokenValidator", true);
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,13 +39,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ManagementDbContext>(options => options.UseSqlServer(connectionString));
 
 // ==============================================================================
-// 🔐 CORREÇÃO DE SEGURANÇA: Ler chave do Docker
+// 🔐 LER CHAVE DO DOCKER
 // ==============================================================================
-var secretKey = builder.Configuration["Jwt:Key"]; // Lê a variável de ambiente Jwt__Key
+var secretKey = builder.Configuration["Jwt:Key"];
 
 if (string.IsNullOrEmpty(secretKey))
 {
-    // Falha rápida se a chave não estiver configurada no Docker
     throw new Exception("A chave JWT (Jwt:Key) não foi encontrada nas configurações do Management API!");
 }
 
@@ -59,36 +62,29 @@ builder.Services.AddAuthentication(x =>
 {
     x.RequireHttpsMetadata = false;
     x.SaveToken = true;
+    x.MapInboundClaims = false;
     x.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        // Agora usa a chave dinâmica vinda do Docker
         IssuerSigningKey = new SymmetricSecurityKey(key),
-
-        TryAllIssuerSigningKeys = true,
-
-        // Mantendo suas configurações de validação
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
 
-        // Mapeamento de Claims (Importante conferir se bate com o AuthController)
-        RoleClaimType = "role",
-        NameClaimType = "unique_name"
+        // 3. DEFINIR os tipos de claim exatamente como o Auth gera
+        NameClaimType = "unique_name",
+        RoleClaimType = "role"
     };
 
-    // Logs detalhados para ajudar no debug (Mantidos)
     x.Events = new JwtBearerEvents
     {
-        OnAuthenticationFailed = context =>
-        {
-            Console.WriteLine($"\n🔴 AUTH FALHOU: {context.Exception.Message}");
-            return Task.CompletedTask;
-        },
         OnTokenValidated = context =>
         {
-            Console.WriteLine($"\n🟢 SUCESSO! Usuário validado: {context.Principal.Identity.Name}");
+            var name = context.Principal.Identity.Name;
+            var roles = context.Principal.FindAll("role").Select(c => c.Value);
+            Console.WriteLine($"\n🟢 USUÁRIO VALIDADO: {name}");
+            Console.WriteLine($"🟢 ROLES ENCONTRADAS: {string.Join(", ", roles)}");
             return Task.CompletedTask;
         }
     };
@@ -108,8 +104,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors(MyAllowSpecificOrigins);
 app.UseStaticFiles();
 
-app.UseAuthentication(); // 1. Quem é você?
-app.UseAuthorization();  // 2. O que você pode fazer?
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

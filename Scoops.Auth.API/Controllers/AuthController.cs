@@ -89,14 +89,9 @@ namespace Scoops.Auth.API.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] {
-                    // MANTENHA ESTES:
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Login),
-                    
-                    // 🔴 MUDE ESTA LINHA:
-                    // De: new Claim(ClaimTypes.Role, user.Role)
-                    // Para:
-                    new Claim("role", user.Role)
+                    new Claim("sub", user.Id.ToString()),
+                    new Claim("unique_name", user.Login),
+                    new Claim("role", user.Role.ToUpper())
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
