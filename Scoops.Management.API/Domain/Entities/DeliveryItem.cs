@@ -5,7 +5,7 @@ namespace Scoops.Management.API.Domain.Entities
     [Table("tb_delivery_items")]
     public class DeliveryItem
     {
-        public long Id { get; set; } // ID do item
+        public long Id { get; set; }
 
         public int Quantity { get; set; }
 

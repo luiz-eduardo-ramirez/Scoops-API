@@ -73,7 +73,7 @@ namespace Scoops.Management.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct([FromForm] CreateProductRequest request)
         {
-            // O Controller não sabe COMO salva, ele só pede para salvar.
+            // Upload da imagem
             string? imageUrl = null;
 
             if (request.File != null)

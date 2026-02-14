@@ -20,7 +20,7 @@ namespace Scoops.Auth.API.Infrastructure.Data
             var adminEmail = configuration["ADMIN_EMAIL"] ?? "admin@scoops.com";
             var adminPass = configuration["ADMIN_PASSWORD"] ?? "admin123";
 
-            // CRÍTICO: Criptografar a senha antes de salvar!
+            // Criptografar a senha antes de salvar!
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(adminPass);
 
             var admin = new User

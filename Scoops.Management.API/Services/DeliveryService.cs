@@ -37,7 +37,7 @@ namespace Scoops.Management.API.Application.Services
                 var product = await _context.Products.FindAsync(itemDto.ProductId);
                 if (product == null) throw new KeyNotFoundException($"Produto ID {itemDto.ProductId} não encontrado.");
 
-                // 🔥 CORREÇÃO DO BUG DE ESTOQUE AQUI:
+
                 product.StockQuantity += itemDto.Quantity;
 
                 var deliveryItem = new DeliveryItem

@@ -13,7 +13,7 @@ namespace Scoops.Management.API.Controllers
     {
         private readonly IDeliveryService _service;
 
-        // Injeção da Interface, não do Banco
+
         public DeliveriesController(IDeliveryService service)
         {
             _service = service;

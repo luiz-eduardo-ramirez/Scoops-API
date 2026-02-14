@@ -13,7 +13,7 @@ namespace Scoops.Management.API.Domain.Entities
         public int Quantity { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Price { get; set; } // Preço no momento da compra
+        public decimal Price { get; set; }
 
         public long OrderId { get; set; }
 

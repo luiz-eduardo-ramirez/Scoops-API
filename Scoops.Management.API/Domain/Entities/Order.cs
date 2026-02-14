@@ -16,7 +16,7 @@ namespace Scoops.Management.API.Domain.Entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }
 
-        // Dados do Cliente (Vamos salvar o ID ou Email do Token)
+
         public string ClientLogin { get; set; } = string.Empty;
 
         public string? ContactPhone { get; set; }

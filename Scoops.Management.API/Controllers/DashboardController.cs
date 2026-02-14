@@ -34,15 +34,13 @@ namespace Scoops.Management.API.Controllers
             var lowStock = await _context.Products
                 .CountAsync(p => p.IsActive && p.StockQuantity <= 0);
 
-            // ====================================================================================
-            // 4. CORREÇÃO: Top 5 Produtos (Execução em Memória para evitar erro de tradução LINQ)
-            // ====================================================================================
+
 
             // Passo A: Buscar os dados brutos do banco (Trazemos apenas o necessário)
             var rawData = await _context.OrderItems
                 .Include(i => i.Product)
                 .Select(i => new { ProductName = i.Product.Name, Quantity = i.Quantity })
-                .ToListAsync(); // <--- O SQL é executado aqui!
+                .ToListAsync();
 
             // Passo B: Agrupar e ordenar na memória do servidor
             var topProducts = rawData
@@ -51,7 +49,7 @@ namespace Scoops.Management.API.Controllers
                 .OrderByDescending(x => x.QuantitySold)
                 .Take(5)
                 .ToList();
-            // ====================================================================================
+
 
             return Ok(new DashboardStats(revenue, totalOrders, lowStock, pendingOrders, topProducts));
         }

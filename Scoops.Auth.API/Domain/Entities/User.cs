@@ -26,7 +26,7 @@ namespace Scoops.Domain.Entities
         [Required]
         public string Password { get; set; } = string.Empty;
 
-        // No .NET, roles costumam ser strings simples ou enums
+
         public string Role { get; set; } = "USER";
 
         public bool Enabled { get; set; } = false;

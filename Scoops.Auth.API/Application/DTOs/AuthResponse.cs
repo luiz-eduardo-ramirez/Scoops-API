@@ -5,7 +5,7 @@ namespace Scoops.Auth.API.Application.DTOs
     public class AuthResponse
     {
         [JsonPropertyName("id")]
-        public long Id { get; set; } // <--- Faltava isso!
+        public long Id { get; set; }
 
         [JsonPropertyName("accessToken")]
         public string Token { get; set; }
@@ -17,7 +17,7 @@ namespace Scoops.Auth.API.Application.DTOs
         public string Username { get; set; }
 
         [JsonPropertyName("email")]
-        public string Email { get; set; } // <--- Bom ter separado
+        public string Email { get; set; }
 
         [JsonPropertyName("roles")]
         public List<string> Roles { get; set; }
@@ -26,8 +26,8 @@ namespace Scoops.Auth.API.Application.DTOs
         {
             Id = id;
             Token = token;
-            Username = username; // Pode ser o Nome (ex: "Amanda")
-            Email = email;       // O login/email real
+            Username = username;
+            Email = email;
             Roles = new List<string> { role };
         }
     }

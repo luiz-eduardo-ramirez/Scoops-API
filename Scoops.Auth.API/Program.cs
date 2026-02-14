@@ -20,9 +20,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-// ==============================================================================
-// 🔐 CORREÇÃO DE SEGURANÇA: Ler chave do Docker/appsettings
-// ==============================================================================
 var secretKey = builder.Configuration["Jwt:Key"]; // Lê a variável de ambiente Jwt__Key
 
 if (string.IsNullOrEmpty(secretKey))
@@ -32,7 +29,7 @@ if (string.IsNullOrEmpty(secretKey))
 }
 
 var key = Encoding.ASCII.GetBytes(secretKey);
-// ==============================================================================
+
 
 builder.Services.AddAuthentication(x =>
 {
@@ -48,7 +45,7 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
 
-        // Mantendo suas configurações originais para simplificar o debug inicial
+
         ValidateIssuer = false,
         ValidateAudience = false
     };
@@ -97,7 +94,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors(MyAllowSpecificOrigins);
 
 app.UseStaticFiles();
-// app.UseHttpsRedirection(); // Comentado para ambiente Docker dev
+// app.UseHttpsRedirection(); 
 
 app.UseAuthentication();
 app.UseAuthorization();

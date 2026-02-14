@@ -16,7 +16,7 @@ namespace Scoops.Management.API.Domain.Entities
         [MaxLength(500)]
         public string? Description { get; set; }
 
-        // Em C#, BigDecimal vira decimal (128-bit precision)
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
@@ -28,7 +28,5 @@ namespace Scoops.Management.API.Domain.Entities
 
         public int StockQuantity { get; set; } = 0;
 
-        // Propriedade de navegação (opcional, mas útil se quiser saber quem fornece)
-        // public virtual ICollection<DeliveryItem> DeliveryItems { get; set; }
     }
 }
