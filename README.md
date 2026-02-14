@@ -138,4 +138,4 @@ ScoopsProject/
 
 ## Autor
 
-Desenvolvido por Luiz Eduardo como parte do processo seletivo para Desenvolvedor Full Stack .NET para a empresa Saggezza.
+Desenvolvido por Luiz Eduardo.
